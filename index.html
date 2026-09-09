@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- WeChat Card Meta Tags -->
+<title>翡翠山房号覆盖地图 | 业主微信群覆盖统计</title>
+<meta name="description" content="翡翠山业主大会微信群覆盖情况可视化地图，共724个房号，已覆盖367个（50.7%），直观展示各栋各房号的业主群覆盖状态。">
+<meta name="keywords" content="翡翠山,业主大会,微信群,房号覆盖,覆盖地图">
+
+<!-- Open Graph (WeChat/Facebook card) -->
+<meta property="og:title" content="翡翠山房号覆盖地图">
+<meta property="og:description" content="业主微信群覆盖情况可视化：724个房号，已覆盖367个（50.7%）。绿色=已覆盖，灰色=未覆盖，悬停查看详情。">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="zh_CN">
+
+<!-- Twitter Card (also works for some WeChat link previews) -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="翡翠山房号覆盖地图">
+<meta name="twitter:description" content="业主微信群覆盖情况可视化：724个房号，已覆盖367个（50.7%）。">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+header {
+    background: linear-gradient(135deg, #1a237e, #0d47a1);
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+header h1 { font-size: 1.8rem; margin: 0; }
+header p { font-size: 0.9rem; margin-top: 5px; opacity: 0.85; }
+main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 15px;
+}
+/* 进度条区域 */
+.stats-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.stats-section h2 {
+    color: #0d47a1;
+    border-bottom: 2px solid #e3f2fd;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+.progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+.progress-label {
+    min-width: 180px;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+.progress-bar-container {
+    flex-grow: 1;
+    height: 24px;
+    background-color: #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    min-width: 200px;
+}
+.progress-bar-inner {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.8s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+.progress-text {
+    min-width: 120px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-align: right;
+}
+/* 图例 */
+.legend-box {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+}
+.legend-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.15);
+}
+/* 期号统计卡片 */
+.phase-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+.phase-stat-card {
+    flex: 1;
+    min-width: 200px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid;
+}
+.phase-stat-card h3 {
+    font-size: 1rem;
+    margin-bottom: 6px;
+}
+.phase-stat-card .stat-num {
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+.phase-stat-card .stat-detail {
+    font-size: 0.8rem;
+    color: #777;
+}
+/* 地图区域 */
+.map-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.map-section h2 {
+    color: #0d47a1;
+    border-bottom: 2px solid #e3f2fd;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+#map-display {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+}
+@media (max-width: 768px) {
+    #map-display { grid-template-columns: 1fr; }
+}
+.phase-container {
+    background: #fafafa;
+    border-radius: 6px;
+    padding: 8px;
+}
+.phase-container h3 {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #1a237e;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #e3f2fd;
+}
+.phase-summary {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+.buildings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 3px;
+}
+.building-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3px 1px;
+    min-height: 40px;
+    border-radius: 4px;
+    background: #f5f5f5;
+    overflow: hidden;
+    transition: transform 0.15s;
+}
+.building-block:hover {
+    transform: scale(1.08);
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.building-label {
+    font-size: 0.62rem;
+    color: #666;
+    margin-bottom: 2px;
+    white-space: nowrap;
+}
+.mini-units {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1px;
+    height: auto;
+    max-width: 100%;
+}
+.mini-unit {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    font-size: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: filter 0.15s;
+    flex: 0 0 auto;
+}
+.mini-unit:hover {
+    filter: brightness(0.85);
+}
+/* Tooltip */
+#tooltip {
+    position: fixed;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+    display: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+/* 汇总信息 */
+.coverage-summary {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: #f0f7ff;
+    border-radius: 4px;
+}
+/* 颜色 */
+.color-covered { background-color: #66bb6a; }
+.color-uncovered { background-color: #e0e0e0; }
+.color-multi { background-color: #43a047; }
+footer {
+    text-align: center;
+    padding: 15px;
+    color: #888;
+    font-size: 0.8rem;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>翡翠山房号覆盖地图</h1>
+    <p>业主微信群覆盖情况可视化</p>
+</header>
+
+<main>
+    <!-- 进度条 -->
+    <section class="stats-section">
+        <h2>覆盖进度</h2>
+        <div class="progress-row">
+            <span class="progress-label">微信群覆盖率</span>
+            <div class="progress-bar-container">
+                <div class="progress-bar-inner" id="coverage-bar" style="background-color: #43a047;"></div>
+            </div>
+            <span class="progress-text" id="coverage-text"></span>
+        </div>
+        <div class="progress-row">
+            <span class="progress-label">待覆盖（未联系到）</span>
+            <div class="progress-bar-container">
+                <div class="progress-bar-inner" id="uncovered-bar" style="background-color: #ef5350;"></div>
+            </div>
+            <span class="progress-text" id="uncovered-text"></span>
+        </div>
+    </section>
+
+    <!-- 图例 -->
+    <div class="legend-box">
+        <span style="font-weight:bold;font-size:0.9rem;">图例：</span>
+        <div class="legend-item">
+            <span class="legend-swatch" style="background-color:#66bb6a"></span>
+            已覆盖（1位业主）
+        </div>
+        <div class="legend-item">
+            <span class="legend-swatch" style="background-color:#43a047"></span>
+            已覆盖（多位业主）
+        </div>
+        <div class="legend-item">
+            <span class="legend-swatch" style="background-color:#e0e0e0"></span>
+            未覆盖
+        </div>
+    </div>
+
+    <!-- 期号统计卡片 -->
+    <div class="phase-stats" id="phase-stats"></div>
+
+    <!-- 地图 -->
+    <section class="map-section">
+        <h2>房号覆盖地图</h2>
+        <div class="coverage-summary" id="coverage-summary"></div>
+        <div id="map-display"></div>
+    </section>
+</main>
+
+<div id="tooltip"></div>
+
+<footer>
+    翡翠山业主大会微信群覆盖统计 &middot; 2026年9月
+</footer>
+
+<script>
+const PAGE_DATA = {"爱丁堡": {"buildings": {"1": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "2": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "3": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": true, "owners": 2}]}, "4": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "5": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}]}, "6": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "7": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 5}]}, "8": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "9": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 2}]}, "10": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "11": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "12": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}]}, "13": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "14": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "15": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 3}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "16": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "17": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 1}]}, "18": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": true, "owners": 3}]}, "19": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "20": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "21": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "22": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 4}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 2}]}, "23": {"units": [{"unit": "1", "covered": true, "owners": 3}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}]}, "24": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "25": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 1}]}, "26": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "27": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 2}]}, "28": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 1}]}, "29": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 4}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "30": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": true, "owners": 2}]}, "31": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "32": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}]}, "33": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "34": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "35": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": false, "owners": 0}]}, "36": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": false, "owners": 0}]}, "37": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": false, "owners": 0}]}, "38": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "39": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 4}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": false, "owners": 0}]}, "40": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 2}]}, "41": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "42": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 2}]}, "43": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": false, "owners": 0}]}, "44": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": true, "owners": 1}]}, "45": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 1}]}, "46": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "47": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}]}, "48": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "49": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "50": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}]}, "51": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}]}, "52": {"units": [{"unit": "1", "covered": true, "owners": 2}]}, "53": {"units": [{"unit": "1", "covered": true, "owners": 1}]}, "54": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "55": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "56": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "57": {"units": [{"unit": "1", "covered": true, "owners": 1}]}, "58": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "59": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "60": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "61": {"units": [{"unit": "1", "covered": true, "owners": 3}, {"unit": "2", "covered": true, "owners": 2}]}, "62": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 3}]}, "63": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}]}, "64": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}]}, "65": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "66": {"units": [{"unit": "1", "covered": true, "owners": 2}]}, "67": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "68": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "70": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "71": {"units": [{"unit": "1", "covered": true, "owners": 1}]}, "72": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "73": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "74": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}]}, "75": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "76": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}]}, "77": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 2}]}, "78": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 1}]}, "79": {"units": [{"unit": "0", "covered": false, "owners": 0}]}, "80": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}]}, "81": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "82": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}]}, "83": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 3}, {"unit": "4", "covered": false, "owners": 0}]}, "84": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 2}]}, "85": {"units": [{"unit": "1", "covered": true, "owners": 4}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 3}, {"unit": "4", "covered": false, "owners": 0}]}, "86": {"units": [{"unit": "1", "covered": true, "owners": 3}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": true, "owners": 3}, {"unit": "6", "covered": false, "owners": 0}]}, "87": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 2}]}, "88": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 3}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "89": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 5}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "90": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "91": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 3}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 4}]}, "92": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 4}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 2}]}, "93": {"units": [{"unit": "1", "covered": true, "owners": 4}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 3}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "94": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "95": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": false, "owners": 0}]}, "96": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}]}, "97": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}}}, "红郡": {"buildings": {"1": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 3}]}, "2": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}]}, "3": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}]}, "4": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 3}, {"unit": "6", "covered": true, "owners": 3}]}, "5": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": true, "owners": 3}, {"unit": "6", "covered": true, "owners": 1}]}, "6": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "7": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": true, "owners": 6}, {"unit": "6", "covered": false, "owners": 0}]}, "8": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "9": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "10": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "11": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": false, "owners": 0}]}, "12": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}]}, "13": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}]}, "14": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}]}, "15": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 3}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}]}, "16": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}]}, "17": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}]}, "18": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 2}]}, "19": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": true, "owners": 4}]}, "20": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "21": {"units": [{"unit": "1", "covered": true, "owners": 1}]}, "22": {"units": [{"unit": "1", "covered": true, "owners": 4}, {"unit": "2", "covered": true, "owners": 3}]}, "23": {"units": [{"unit": "1", "covered": true, "owners": 5}, {"unit": "2", "covered": false, "owners": 0}]}, "24": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}]}, "25": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}]}, "26": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}]}, "27": {"units": [{"unit": "1", "covered": false, "owners": 0}]}, "28": {"units": [{"unit": "1", "covered": true, "owners": 3}]}, "29": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}]}, "30": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}]}, "31": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}]}, "32": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}]}, "33": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 2}]}, "34": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 5}]}, "35": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}]}, "36": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}]}, "37": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": true, "owners": 3}]}, "38": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": true, "owners": 2}, {"unit": "7", "covered": true, "owners": 6}, {"unit": "8", "covered": false, "owners": 0}]}, "39": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}, {"unit": "7", "covered": false, "owners": 0}, {"unit": "8", "covered": false, "owners": 0}]}, "40": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": true, "owners": 3}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": false, "owners": 0}, {"unit": "7", "covered": true, "owners": 1}, {"unit": "8", "covered": true, "owners": 1}]}, "41": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 1}, {"unit": "7", "covered": false, "owners": 0}, {"unit": "8", "covered": true, "owners": 1}]}, "42": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 1}]}, "43": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 3}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 5}]}, "44": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}]}, "45": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 2}]}, "46": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}]}, "47": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}]}, "48": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 3}]}, "49": {"units": [{"unit": "1", "covered": true, "owners": 5}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 3}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "50": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 3}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 2}]}, "51": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": true, "owners": 3}]}, "52": {"units": [{"unit": "1", "covered": true, "owners": 4}, {"unit": "2", "covered": true, "owners": 3}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 4}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "53": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "54": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 3}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": true, "owners": 3}, {"unit": "6", "covered": false, "owners": 0}]}, "55": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": true, "owners": 3}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 4}]}, "56": {"units": [{"unit": "1", "covered": true, "owners": 8}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 4}]}, "57": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "58": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 6}, {"unit": "6", "covered": true, "owners": 1}]}, "59": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 3}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "60": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": true, "owners": 1}]}, "61": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": false, "owners": 0}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 1}]}, "62": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}]}, "63": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 1}]}, "64": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 4}, {"unit": "3", "covered": true, "owners": 2}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": false, "owners": 0}]}, "65": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 1}]}, "66": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 3}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": true, "owners": 2}]}, "67": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 3}, {"unit": "4", "covered": true, "owners": 3}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 2}]}, "68": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 5}, {"unit": "3", "covered": true, "owners": 5}, {"unit": "4", "covered": true, "owners": 4}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": false, "owners": 0}]}, "69": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 3}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": true, "owners": 4}]}, "70": {"units": [{"unit": "1", "covered": true, "owners": 2}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 1}]}, "71": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": true, "owners": 1}, {"unit": "6", "covered": true, "owners": 3}]}, "72": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 3}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}]}, "73": {"units": [{"unit": "2", "covered": true, "owners": 1}, {"unit": "3", "covered": false, "owners": 0}, {"unit": "4", "covered": true, "owners": 2}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": true, "owners": 3}]}, "74": {"units": [{"unit": "1", "covered": false, "owners": 0}, {"unit": "2", "covered": true, "owners": 2}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": true, "owners": 2}, {"unit": "6", "covered": false, "owners": 0}, {"unit": "7", "covered": false, "owners": 0}, {"unit": "8", "covered": true, "owners": 3}]}, "75": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": false, "owners": 0}, {"unit": "3", "covered": true, "owners": 1}, {"unit": "4", "covered": true, "owners": 1}, {"unit": "5", "covered": false, "owners": 0}, {"unit": "6", "covered": false, "owners": 0}, {"unit": "7", "covered": false, "owners": 0}, {"unit": "8", "covered": true, "owners": 1}]}, "76": {"units": [{"unit": "1", "covered": true, "owners": 1}, {"unit": "2", "covered": true, "owners": 3}]}}}, "_summary": {"total": 724, "covered": 367, "uncovered": 357, "coverage_rate": 50.7}};
+
+// --- 渲染进度条 ---
+const summary = PAGE_DATA["_summary"];
+const covPct = (summary.covered / summary.total * 100).toFixed(1);
+const uncovPct = (summary.uncovered / summary.total * 100).toFixed(1);
+
+document.getElementById("coverage-bar").style.width = covPct + "%";
+document.getElementById("coverage-bar").textContent = covPct + "%";
+document.getElementById("coverage-text").textContent = `${summary.covered} / ${summary.total} 户`;
+
+document.getElementById("uncovered-bar").style.width = uncovPct + "%";
+document.getElementById("uncovered-bar").textContent = uncovPct + "%";
+document.getElementById("uncovered-text").textContent = `${summary.uncovered} / ${summary.total} 户`;
+
+document.getElementById("coverage-summary").textContent =
+    `共 ${summary.total} 个房号，已覆盖 ${summary.covered} 个（${covPct}%），未覆盖 ${summary.uncovered} 个（${uncovPct}%）。`;
+
+// --- 渲染期号统计卡片 ---
+const phaseStatsEl = document.getElementById("phase-stats");
+const phaseColors = { "爱丁堡": "#1a237e", "红郡": "#b71c1c" };
+
+for (const phaseName of Object.keys(PAGE_DATA).filter(k => k !== "_summary")) {
+    const phaseData = PAGE_DATA[phaseName];
+    let pTotal = 0, pCovered = 0;
+    for (const bld in phaseData.buildings) {
+        for (const u of phaseData.buildings[bld].units) {
+            pTotal++;
+            if (u.covered) pCovered++;
+        }
+    }
+    const pPct = pTotal > 0 ? (pCovered / pTotal * 100).toFixed(1) : 0;
+    const color = phaseColors[phaseName] || "#333";
+    phaseStatsEl.innerHTML += `
+        <div class="phase-stat-card" style="border-left-color:${color}">
+            <h3 style="color:${color}">${phaseName}</h3>
+            <div class="stat-num">${pCovered} / ${pTotal}</div>
+            <div class="stat-detail">覆盖率 ${pPct}% &middot; 待覆盖 ${pTotal - pCovered} 户</div>
+        </div>`;
+}
+
+// --- 渲染地图 ---
+const mapDisplay = document.getElementById("map-display");
+const tooltip = document.getElementById("tooltip");
+
+for (const phaseName of Object.keys(PAGE_DATA).filter(k => k !== "_summary")) {
+    const phaseData = PAGE_DATA[phaseName];
+    const phaseEl = document.createElement("div");
+    phaseEl.className = "phase-container";
+
+    let pTotal = 0, pCovered = 0;
+    for (const bld in phaseData.buildings) {
+        for (const u of phaseData.buildings[bld].units) {
+            pTotal++;
+            if (u.covered) pCovered++;
+        }
+    }
+    const pPct = pTotal > 0 ? (pCovered / pTotal * 100).toFixed(1) : 0;
+
+    phaseEl.innerHTML = `
+        <h3>${phaseName}</h3>
+        <div class="phase-summary">覆盖 ${pCovered}/${pTotal} (${pPct}%)</div>
+    `;
+
+    const buildingsGrid = document.createElement("div");
+    buildingsGrid.className = "buildings-grid";
+
+    const buildings = phaseData.buildings;
+    for (const buildingNum of Object.keys(buildings).sort((a,b) => parseInt(a) - parseInt(b))) {
+        const buildingData = buildings[buildingNum];
+        const buildingEl = document.createElement("div");
+        buildingEl.className = "building-block";
+        buildingEl.title = `${phaseName} ${buildingNum}栋`;
+
+        const label = document.createElement("span");
+        label.className = "building-label";
+        label.textContent = `${buildingNum}栋`;
+        buildingEl.appendChild(label);
+
+        const unitsContainer = document.createElement("div");
+        unitsContainer.className = "mini-units";
+
+        const units = buildingData.units.sort((a, b) => parseInt(a.unit) - parseInt(b.unit));
+        for (const unit of units) {
+            const unitEl = document.createElement("div");
+            unitEl.className = "mini-unit";
+            if (unit.covered) {
+                unitEl.classList.add(unit.owners > 1 ? "color-multi" : "color-covered");
+            } else {
+                unitEl.classList.add("color-uncovered");
+            }
+            unitEl.textContent = unit.unit;
+            unitEl.dataset.phase = phaseName;
+            unitEl.dataset.building = buildingNum;
+            unitEl.dataset.unit = unit.unit;
+            unitEl.dataset.covered = unit.covered;
+            unitEl.dataset.owners = unit.owners;
+
+            unitEl.addEventListener("mouseenter", function(e) {
+                const cov = this.dataset.covered === "true";
+                const ownerStr = cov ? `${this.dataset.owners}位业主` : "无业主";
+                tooltip.innerHTML = `${this.dataset.phase} ${this.dataset.building}栋 ${this.dataset.unit}号<br>状态: ${cov ? "已覆盖" : "未覆盖"}<br>${ownerStr}`;
+                tooltip.style.display = "block";
+            });
+            unitEl.addEventListener("mousemove", function(e) {
+                tooltip.style.left = (e.clientX + 15) + "px";
+                tooltip.style.top = (e.clientY - 10) + "px";
+            });
+            unitEl.addEventListener("mouseleave", function() {
+                tooltip.style.display = "none";
+            });
+
+            unitsContainer.appendChild(unitEl);
+        }
+
+        buildingEl.appendChild(unitsContainer);
+        buildingsGrid.appendChild(buildingEl);
+    }
+
+    phaseEl.appendChild(buildingsGrid);
+    mapDisplay.appendChild(phaseEl);
+}
+</script>
+
+</body>
+</html>
