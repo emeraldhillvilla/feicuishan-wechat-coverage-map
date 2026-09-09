@@ -239,6 +239,7 @@ main {
 .mini-units {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 1px;
     height: auto;
@@ -404,6 +405,25 @@ for (const phaseName of Object.keys(PAGE_DATA).filter(k => k !== "_summary")) {
 const mapDisplay = document.getElementById("map-display");
 const tooltip = document.getElementById("tooltip");
 
+// Shared tooltip positioning: guarantees within viewport
+function positionTooltip(cx, cy) {
+    const tw = tooltip.offsetWidth;
+    const th = tooltip.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const margin = 8;
+    let x = cx + 15;
+    let y = cy + 15;
+    if (x + tw + margin > vw) x = cx - tw - 10;
+    if (y + th + margin > vh) y = cy - th - 10;
+    if (x < margin) x = margin;
+    if (y < margin) y = margin;
+    if (x + tw + margin > vw) x = vw - tw - margin;
+    if (y + th + margin > vh) y = vh - th - margin;
+    tooltip.style.left = x + "px";
+    tooltip.style.top = y + "px";
+}
+
 for (const phaseName of Object.keys(PAGE_DATA).filter(k => k !== "_summary")) {
     const phaseData = PAGE_DATA[phaseName];
     const phaseEl = document.createElement("div");
@@ -464,18 +484,10 @@ for (const phaseName of Object.keys(PAGE_DATA).filter(k => k !== "_summary")) {
                 const groupStr = cov && this.dataset.groups ? `所在群: ${this.dataset.groups}` : "";
                 tooltip.innerHTML = `${this.dataset.phase} ${this.dataset.building}栋 ${this.dataset.unit}号<br>状态: ${cov ? "已覆盖" : "未覆盖"}<br>${ownerStr}${groupStr ? "<br>" + groupStr : ""}`;
                 tooltip.style.display = "block";
+                positionTooltip(e.clientX, e.clientY);
             });
             unitEl.addEventListener("mousemove", function(e) {
-                let x = e.clientX + 15;
-                let y = e.clientY - 10;
-                const tw = tooltip.offsetWidth;
-                const th = tooltip.offsetHeight;
-                if (x + tw > window.innerWidth) x = e.clientX - tw - 10;
-                if (y + th > window.innerHeight) y = window.innerHeight - th - 5;
-                if (x < 0) x = 5;
-                if (y < 0) y = 5;
-                tooltip.style.left = x + "px";
-                tooltip.style.top = y + "px";
+                positionTooltip(e.clientX, e.clientY);
             });
             unitEl.addEventListener("mouseleave", function() {
                 tooltip.style.display = "none";
@@ -488,12 +500,7 @@ for (const phaseName of Object.keys(PAGE_DATA).filter(k => k !== "_summary")) {
                 tooltip.innerHTML = `${this.dataset.phase} ${this.dataset.building}栋 ${this.dataset.unit}号<br>状态: ${cov ? "已覆盖" : "未覆盖"}<br>${ownerStr}${groupStr ? "<br>" + groupStr : ""}`;
                 tooltip.style.display = "block";
                 const touch = e.touches[0];
-                let x = touch.clientX + 15;
-                let y = touch.clientY - 40;
-                if (x + 250 > window.innerWidth) x = window.innerWidth - 260;
-                if (y < 0) y = 5;
-                tooltip.style.left = x + "px";
-                tooltip.style.top = y + "px";
+                positionTooltip(touch.clientX, touch.clientY);
                 clearTimeout(this._touchTimer);
                 this._touchTimer = setTimeout(() => { tooltip.style.display = "none"; }, 3000);
             });
