@@ -44,6 +44,7 @@ main {
     max-width: 1400px;
     margin: 0 auto;
     padding: 15px;
+    overflow-x: hidden;
 }
 /* 进度条区域 */
 .stats-section {
@@ -62,13 +63,14 @@ main {
 .progress-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
 }
 .progress-label {
-    min-width: 180px;
+    width: 100%;
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 .progress-bar-container {
     flex-grow: 1;
@@ -76,7 +78,7 @@ main {
     background-color: #e0e0e0;
     border-radius: 12px;
     overflow: hidden;
-    min-width: 200px;
+    min-width: 80px;
 }
 .progress-bar-inner {
     height: 100%;
@@ -86,14 +88,14 @@ main {
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: bold;
 }
 .progress-text {
-    min-width: 120px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: bold;
     text-align: right;
+    white-space: nowrap;
 }
 /* 图例 */
 .legend-box {
@@ -128,10 +130,10 @@ main {
 }
 .phase-stat-card {
     flex: 1;
-    min-width: 200px;
+    min-width: 140px;
     background: #fff;
     border-radius: 8px;
-    padding: 12px 16px;
+    padding: 10px 12px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.06);
     border-left: 4px solid;
 }
@@ -168,6 +170,25 @@ main {
 }
 @media (max-width: 768px) {
     #map-display { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.3rem; }
+    header p { font-size: 0.8rem; }
+    main { padding: 8px; }
+    .stats-section { padding: 12px 10px; }
+    .map-section { padding: 10px 8px; }
+    .buildings-grid {
+        grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
+    }
+    .mini-unit { width: 13px; height: 13px; font-size: 0.45rem; }
+    .building-label { font-size: 0.55rem; }
+    .phase-stat-card { min-width: 100px; padding: 8px 10px; }
+    .phase-stat-card .stat-num { font-size: 1.2rem; }
+    #tooltip { max-width: 220px; font-size: 0.7rem; }
+}
+@media (max-width: 480px) {
+    .buildings-grid {
+        grid-template-columns: repeat(auto-fill, minmax(min(120px, 100%), 1fr));
+    }
+    .mini-unit { width: 12px; height: 12px; font-size: 0.4rem; }
 }
 .phase-container {
     background: #fafafa;
@@ -190,7 +211,7 @@ main {
 }
 .buildings-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
     gap: 3px;
 }
 .building-block {
@@ -250,7 +271,8 @@ main {
     font-size: 0.8rem;
     pointer-events: none;
     z-index: 9999;
-    white-space: nowrap;
+    max-width: 280px;
+    word-wrap: break-word;
     display: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
@@ -444,11 +466,36 @@ for (const phaseName of Object.keys(PAGE_DATA).filter(k => k !== "_summary")) {
                 tooltip.style.display = "block";
             });
             unitEl.addEventListener("mousemove", function(e) {
-                tooltip.style.left = (e.clientX + 15) + "px";
-                tooltip.style.top = (e.clientY - 10) + "px";
+                let x = e.clientX + 15;
+                let y = e.clientY - 10;
+                const tw = tooltip.offsetWidth;
+                const th = tooltip.offsetHeight;
+                if (x + tw > window.innerWidth) x = e.clientX - tw - 10;
+                if (y + th > window.innerHeight) y = window.innerHeight - th - 5;
+                if (x < 0) x = 5;
+                if (y < 0) y = 5;
+                tooltip.style.left = x + "px";
+                tooltip.style.top = y + "px";
             });
             unitEl.addEventListener("mouseleave", function() {
                 tooltip.style.display = "none";
+            });
+            unitEl.addEventListener("touchstart", function(e) {
+                e.preventDefault();
+                const cov = this.dataset.covered === "true";
+                const ownerStr = cov ? `${this.dataset.owners}位业主` : "无业主";
+                const groupStr = cov && this.dataset.groups ? `所在群: ${this.dataset.groups}` : "";
+                tooltip.innerHTML = `${this.dataset.phase} ${this.dataset.building}栋 ${this.dataset.unit}号<br>状态: ${cov ? "已覆盖" : "未覆盖"}<br>${ownerStr}${groupStr ? "<br>" + groupStr : ""}`;
+                tooltip.style.display = "block";
+                const touch = e.touches[0];
+                let x = touch.clientX + 15;
+                let y = touch.clientY - 40;
+                if (x + 250 > window.innerWidth) x = window.innerWidth - 260;
+                if (y < 0) y = 5;
+                tooltip.style.left = x + "px";
+                tooltip.style.top = y + "px";
+                clearTimeout(this._touchTimer);
+                this._touchTimer = setTimeout(() => { tooltip.style.display = "none"; }, 3000);
             });
 
             unitsContainer.appendChild(unitEl);
