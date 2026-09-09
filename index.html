@@ -284,7 +284,14 @@ footer {
     .map-section { padding: 10px 8px; }
     .buildings-grid {
         grid-template-columns: repeat(auto-fill, minmax(min(130px, 100%), 1fr));
+        gap: 10px;
     }
+    .building-block {
+        padding: 10px 6px;
+        min-height: 56px;
+    }
+    .building-label { margin-bottom: 6px; }
+    .mini-units { gap: 4px; }
     .mini-unit { width: 30px; height: 30px; font-size: 0.85rem; }
     .building-label { font-size: 0.6rem; }
     .phase-stat-card { min-width: 100px; padding: 8px 10px; }
@@ -294,7 +301,13 @@ footer {
 @media (max-width: 480px) {
     .buildings-grid {
         grid-template-columns: repeat(auto-fill, minmax(min(110px, 100%), 1fr));
+        gap: 8px;
     }
+    .building-block {
+        padding: 8px 4px;
+        min-height: 52px;
+    }
+    .mini-units { gap: 3px; }
     .mini-unit { width: 30px; height: 30px; font-size: 0.85rem; }
 }
 </style>
